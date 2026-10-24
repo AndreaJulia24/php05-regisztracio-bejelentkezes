@@ -2,10 +2,16 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
-require __DIR__ . '/database.php';
+require_once __DIR__ . '/database.php';
 
 $pdo = get_pdo();
-$user = current_user();
+$user = null;
+
+if (isset($_SESSION['uid'])) {
+    $stmt = $pdo->prepare('SELECT nev AS name, email FROM felhasznalo WHERE id = ?');
+    $stmt->execute([$_SESSION['uid']]);
+    $user = $stmt->fetch() ?: null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="hu">

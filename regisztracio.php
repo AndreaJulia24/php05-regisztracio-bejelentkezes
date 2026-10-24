@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
-require __DIR__ . '/database.php';
+require_once __DIR__ . '/database.php';
 
 if (isset($_SESSION['uid'])) {
     redirect('index.php');

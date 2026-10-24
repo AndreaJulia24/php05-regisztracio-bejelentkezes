@@ -19,5 +19,5 @@ setcookie(
 
 session_destroy();
 
-header('Location: /belepes.php', true, 303); 
+header('Location: bejelentkezes.php', true, 303); 
 exit;

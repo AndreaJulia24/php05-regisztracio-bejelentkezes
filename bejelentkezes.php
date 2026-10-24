@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
-require __DIR__ . '/database.php';
+require_once __DIR__ . '/database.php';
 
 // Ha már be van jelentkezve, irány az index
 if (isset($_SESSION['uid'])) {
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </ul>
         <?php endif; ?>
 
-        <form method="post" novalidate>
+        <form method="post" action="bejelentkezes.php" novalidate>
             <label>
                 E-mail cím
                 <input type="email" name="email" value="<?= e($email) ?>" required>

@@ -12,7 +12,7 @@ session_set_cookie_params([
 ]);
 session_start();
 
-require __DIR__ . '/data/database.php';
+require_once __DIR__ . '/database.php';
 
 const USERS_FILE = __DIR__ . '/data/users.json';
 
@@ -95,13 +95,13 @@ function regisztral(PDO $pdo, string $nev, string $email, string $jelszo, string
         throw $e; 
     }
 
-    header('Location: belepes.php');
+    header('Location: bejelentkezes.php');
     exit;
 }
 function bejelentkezve_kell(): int 
 {
     if (empty($_SESSION['uid'])) { 
-        header('Location: /belepes.php', true, 302); 
+        header('Location: bejelentkezes.php', true, 302); 
         exit; 
     }
     return (int) $_SESSION['uid'];
