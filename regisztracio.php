@@ -2,8 +2,9 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
+require __DIR__ . '/database.php';
 
-if (current_user() !== null) {
+if (isset($_SESSION['uid'])) {
     redirect('index.php');
 }
 
@@ -36,15 +37,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($errors === []) {
-        $users = load_users();
-        $users[] = [
-            'name' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-        ];
-        save_users($users);
+       $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        redirect('bejelentkezes.php?registered=1');
+        try {
+            $stmt = get_pdo()->prepare('INSERT INTO felhasznalo (nev, email, jelszo_hash) VALUES (?, ?, ?)');
+            $stmt->execute([$name, mb_strtolower($email), $hash]);
+
+            // Sikeres regisztráció után átirányítás a bejelentkezéshez
+            redirect('bejelentkezes.php?registered=1');
+
+        } catch (PDOException $ex) {
+            // UNIQUE megsértés kezelése (ha az e-mail már létezik az adatbázisban)
+            if ($ex->getCode() === '23000' || str_contains($ex->getMessage(), 'UNIQUE')) {
+                $errors['email'] = 'Ezzel az e-maillel már regisztráltak.';
+            } else {
+                throw $ex; // Egyéb váratlan adatbázis hiba dobása
+            }
+        }
     }
 }
 ?>
