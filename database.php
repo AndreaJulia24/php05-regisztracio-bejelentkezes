@@ -5,7 +5,7 @@ function get_pdo(): PDO
     static $pdo = null;
 
     if ($pdo === null) {
-        $dbPath = __DIR__ . '/adatbazis.sqlite';
+        $dbPath = __DIR__ . '/database.sqlite';
         
         $pdo = new PDO('sqlite:' . $dbPath, null, null, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

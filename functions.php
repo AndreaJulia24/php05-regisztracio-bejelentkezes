@@ -1,9 +1,18 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/data/database.php';
-
+//biztonsagi session beallitasok
+ini_set('session.use_strict_mode', '1');
+session_set_cookie_params([
+    'lifetime' => 0, 
+    'path' => '/', 
+    'httponly' => true,
+    'samesite' => 'Lax', 
+    'secure' => !empty($_SERVER['HTTPS']),
+]);
 session_start();
+
+require __DIR__ . '/data/database.php';
 
 const USERS_FILE = __DIR__ . '/data/users.json';
 
@@ -88,4 +97,12 @@ function regisztral(PDO $pdo, string $nev, string $email, string $jelszo, string
 
     header('Location: belepes.php');
     exit;
+}
+function bejelentkezve_kell(): int 
+{
+    if (empty($_SESSION['uid'])) { 
+        header('Location: /belepes.php', true, 302); 
+        exit; 
+    }
+    return (int) $_SESSION['uid'];
 }

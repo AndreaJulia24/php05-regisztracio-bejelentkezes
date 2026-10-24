@@ -2,8 +2,22 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
-
 $_SESSION = [];
+$p = session_get_cookie_params();
+setcookie(
+    session_name(), 
+    '', 
+    [
+        'expires' => time() - 3600, 
+        'path' => $p['path'], 
+        'domain' => $p['domain'] ?? '',
+        'secure' => $p['secure'] ?? false,
+        'httponly' => true, 
+        'samesite' => 'Lax'
+    ]
+);
+
 session_destroy();
 
-redirect('index.php');
+header('Location: /belepes.php', true, 303); 
+exit;

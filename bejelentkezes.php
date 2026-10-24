@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 require __DIR__ . '/functions.php';
+require __DIR__ . '/database.php';
 
-if (current_user() !== null) {
+// Ha már be van jelentkezve, irány az index
+if (isset($_SESSION['uid'])) {
     redirect('index.php');
 }
 
@@ -14,18 +16,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim((string) ($_POST['email'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
-    $user = find_user($email);
+    $stmt = get_pdo()->prepare('SELECT id, jelszo_hash FROM felhasznalo WHERE email = ?');
+    $stmt->execute([mb_strtolower($email)]); //megvedi az appot az sql injection ellen
+    $f = $stmt->fetch();
 
-    if ($user === null || !password_verify($password, $user['password'])) {
-        $error = 'Hibás e-mail cím vagy jelszó.';
-    } else {
+    if ($f && password_verify($password, $f['jelszo_hash'])) {
         session_regenerate_id(true);
-        $_SESSION['user'] = [
-            'name' => $user['name'],
-            'email' => $user['email'],
-        ];
+        $_SESSION['uid'] = (int) $f['id'];
+
+        if (password_needs_rehash($f['jelszo_hash'], PASSWORD_DEFAULT)) {
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            $updateStmt = get_pdo()->prepare('UPDATE felhasznalo SET jelszo_hash = ? WHERE id = ?');
+            $updateStmt->execute([$newHash, $f['id']]);
+        }
 
         redirect('index.php');
+    } else {
+        $error = 'Hibás e-mail cím vagy jelszó.';
     }
 }
 ?>
