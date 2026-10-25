@@ -1,41 +1,3 @@
-<?php
-declare(strict_types=1);
-
-require __DIR__ . '/functions.php';
-require_once __DIR__ . '/database.php';
-
-// Ha már be van jelentkezve, irány az index
-if (isset($_SESSION['uid'])) {
-    redirect('index.php');
-}
-
-$email = '';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim((string) ($_POST['email'] ?? ''));
-    $password = (string) ($_POST['password'] ?? '');
-
-    $stmt = get_pdo()->prepare('SELECT id, jelszo_hash FROM felhasznalo WHERE email = ?');
-    $stmt->execute([mb_strtolower($email)]); //megvedi az appot az sql injection ellen
-    $f = $stmt->fetch();
-
-    if ($f && password_verify($password, $f['jelszo_hash'])) {
-        session_regenerate_id(true);
-        $_SESSION['uid'] = (int) $f['id'];
-
-        if (password_needs_rehash($f['jelszo_hash'], PASSWORD_DEFAULT)) {
-            $newHash = password_hash($password, PASSWORD_DEFAULT);
-            $updateStmt = get_pdo()->prepare('UPDATE felhasznalo SET jelszo_hash = ? WHERE id = ?');
-            $updateStmt->execute([$newHash, $f['id']]);
-        }
-
-        redirect('index.php');
-    } else {
-        $error = 'Hibás e-mail cím vagy jelszó.';
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -51,29 +13,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Bejelentkezés</h1>
         <p>Jelentkezz be a fiókodba.</p>
 
-        <?php if (isset($_GET['registered'])): ?>
-            <p class="success">Sikeres regisztráció! Most már bejelentkezhetsz.</p>
-        <?php endif; ?>
+        <p class="success" id="siker" hidden>Sikeres regisztráció! Most már bejelentkezhetsz.</p>
 
-        <?php if ($error !== ''): ?>
-            <ul class="errors">
-                <li><?= e($error) ?></li>
-            </ul>
-        <?php endif; ?>
+        <ul class="errors" id="error-list" hidden></ul>
 
-        <form method="post" action="bejelentkezes.php" novalidate>
+        <form id="login-form" novalidate>
             <label>
                 E-mail cím
-                <input type="email" name="email" value="<?= e($email) ?>" required>
+                <input type="email" id="email" required>
             </label>
             <label>
                 Jelszó
-                <input type="password" name="password" required>
+                <input type="password" id="jelszo" required>
             </label>
             <button class="primary" type="submit">Bejelentkezés</button>
         </form>
 
         <p class="small">Még nincs fiókod? <a href="regisztracio.php">Regisztrálj</a></p>
     </main>
+
+    <script type="module">
+        import { auth, belep } from './firebase.js';
+
+        // Ha már be van jelentkezve, irány az index
+        await auth.authStateReady();
+        if (auth.currentUser) {
+            window.location.replace('index.php');
+        }
+
+        const form = document.querySelector('#login-form');
+        const errorList = document.querySelector('#error-list');
+        const siker = document.querySelector('#siker');
+
+        // Regisztráció után (?registered=1) mutatjuk a zöld üzenetet
+        if (new URLSearchParams(window.location.search).has('registered')) {
+            siker.hidden = false;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // ne küldje el a PHP-nak, ne töltse újra az oldalt
+            siker.hidden = true; // ne látszódjon egyszerre a zöld és a piros üzenet
+            errorList.hidden = true;
+            errorList.innerHTML = '';
+
+            const email = document.querySelector('#email').value.trim().toLowerCase();
+            const jelszo = document.querySelector('#jelszo').value;
+
+            try {
+                await belep(email, jelszo);
+                window.location.replace('index.php');
+            } catch (err) {
+                const li = document.createElement('li');
+                li.textContent = err.message;
+                errorList.appendChild(li);
+                errorList.hidden = false;
+            }
+        });
+    </script>
 </body>
 </html>
