@@ -1,3 +1,48 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/functions.php';
+
+// Inicializáljuk a próbálkozások számlálóját
+if (!isset($_SESSION['login_attempts'])) {
+    $_SESSION['login_attempts'] = 0;
+    $_SESSION['last_attempt_time'] = time();
+}
+
+// Ha már eltelt legalább 60 másodperc az utolsó próbálkozás óta, lenullázzuk a számlálót
+if (time() - $_SESSION['last_attempt_time'] > 60) {
+    $_SESSION['login_attempts'] = 0;
+}
+
+// 1. Ellenőrzés: ha elérte a 6 hibás próbálkozást, 429-es választ adunk
+if ($_SESSION['login_attempts'] >= 6) {
+    http_response_code(429);
+    header('Retry-After: 60');
+    header('Content-Type: text/plain; charset=utf-8');
+    echo '429 Too Many Requests - Túl sok próbálkozás. Várj 60 másodpercet!';
+    exit;
+}
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Növeljük a hibás próbálkozások számát és frissítjük az időbélyeget
+    $_SESSION['login_attempts']++;
+    $_SESSION['last_attempt_time'] = time();
+
+    // Ha ezzel a POST-tal érte el a 6-ot, egyből 429-et dobunk
+    if ($_SESSION['login_attempts'] >= 6) {
+        http_response_code(429);
+        header('Retry-After: 60');
+        header('Content-Type: text/plain; charset=utf-8');
+        echo '429 Too Many Requests - Túl sok próbálkozás. Várj 60 másodpercet!';
+        exit;
+    }
+
+    // 1–5. próbálkozás esetén a sima 401 Unauthorized hiba megy ki
+    http_response_code(401);
+    $error = 'Hibás e-mail cím vagy jelszó.';
+}
+?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>

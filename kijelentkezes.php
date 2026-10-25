@@ -1,6 +1,13 @@
 <?php
 declare(strict_types=1);
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    echo '405 Method Not Allowed - Kijelentkezés csak POST kéréssel lehetséges.';
+    exit;
+}
+
 require __DIR__ . '/functions.php';
 $_SESSION = [];
 $p = session_get_cookie_params();

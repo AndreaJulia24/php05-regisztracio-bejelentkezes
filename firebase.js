@@ -15,7 +15,6 @@ import {
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAuRorATRw0YeNf93DW24a-DNoEGPHFp4g",
   authDomain: "php05-register-login.firebaseapp.com",
@@ -25,7 +24,6 @@ const firebaseConfig = {
   appId: "1:272354945817:web:cd1c798d1bf3cb2a78b388",
   measurementId: "G-RR1P0SHJHK"
 };
-
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
