@@ -9,8 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require __DIR__ . '/functions.php';
+
+emlekezz_ram_torol(); // töröljük a split-token-t az adatbázisból
+
 $_SESSION = [];
-$p = session_get_cookie_params();
+
+$p = session_get_cookie_params(); // toroljuk a seession cookie-t is
 setcookie(
     session_name(), 
     '', 
@@ -24,7 +28,9 @@ setcookie(
     ]
 );
 
+// 4. Megszüntetjük a szerveroldali munkamenetet
 session_destroy();
 
+// 5. Átirányítunk a bejelentkezési oldalra
 header('Location: bejelentkezes.php', true, 303); 
 exit;

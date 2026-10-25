@@ -243,3 +243,28 @@ form button {
         border-radius: 14px;
     }
 }
+
+.remember-box {
+    margin: 12px 0 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; 
+}
+
+.remember-box label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: var(--text-color, #e0e0e0);
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-box input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+    accent-color: #6366f1;
+    margin: 0;
+}

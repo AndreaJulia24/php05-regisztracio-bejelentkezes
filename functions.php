@@ -11,6 +11,7 @@ session_set_cookie_params([
     'secure' => !empty($_SERVER['HTTPS']),
 ]);
 session_start();
+emlekezz_ram_ellenoriz(); 
 
 require_once __DIR__ . '/database.php';
 
@@ -106,3 +107,74 @@ function bejelentkezve_kell(): int
     }
     return (int) $_SESSION['uid'];
 }
+
+function emlekezz_ram_letrehoz(int $felhasznaloId): void {
+    $selector = bin2hex(random_bytes(16));
+    $validator = bin2hex(random_bytes(32));
+    $validatorHash = hash('sha256', $validator);
+    $lejarat = date('Y-m-d H:i:s', time() + (86400 * 30)); // 30 nap
+
+    $stmt = get_pdo()->prepare('
+        INSERT INTO emlekezz_token (felhasznalo_id, selector, validator_hash, lejarat)
+        VALUES (?, ?, ?, ?)
+    ');
+    $stmt->execute([$felhasznaloId, $selector, $validatorHash, $lejarat]);
+
+    $cookieErtek = $selector . ':' . $validator;
+    setcookie('remember_me', $cookieErtek, [
+        'expires' => time() + (86400 * 30),
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => false
+    ]);
+}
+
+function emlekezz_ram_ellenoriz(): ?int {
+    if (empty($_COOKIE['remember_me'])) {
+        return null;
+    }
+
+    [$selector, $validator] = explode(':', $_COOKIE['remember_me'], 2);
+    $stmt = get_pdo()->prepare('SELECT * FROM emlekezz_token WHERE selector = ? AND lejarat > CURRENT_TIMESTAMP');
+    $stmt->execute([$selector]);
+    $token = $stmt->fetch();
+
+    if ($token && hash_equals($token['validator_hash'], hash('sha256', $validator))) {
+        $_SESSION['uid'] = (int) $token['felhasznalo_id'];
+        return (int) $token['felhasznalo_id'];
+    }
+
+    // Ha a token nem létezik vagy lejárt, vagy a validator nem egyezik, töröljük a cookie-t
+    setcookie('remember_me', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => false
+    ]);
+
+    emlekezz_ram_torol();
+    return null;
+    
+}
+function emlekezz_ram_torol(): void 
+{
+    if (!empty($_COOKIE['remember_me'])) {
+        $reszek = explode(':', $_COOKIE['remember_me'], 2);
+        if (count($reszek) === 2) {
+            $stmt = get_pdo()->prepare('DELETE FROM emlekezz_token WHERE selector = ?');
+            $stmt->execute([$reszek[0]]);
+        }
+    }
+
+    setcookie('remember_me', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => !empty($_SERVER['HTTPS'])
+    ]);
+}
+
+emlekezz_ram_ellenoriz();

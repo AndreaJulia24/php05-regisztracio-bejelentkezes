@@ -20,6 +20,16 @@ function get_pdo(): PDO
             jelszo_hash TEXT NOT NULL,
             letrehozva DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
+        $pdo->exec("
+        CREATE TABLE IF NOT EXISTS emlekezz_token (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            felhasznalo_id INTEGER NOT NULL,
+            selector TEXT NOT NULL UNIQUE,
+            validator_hash TEXT NOT NULL,
+            lejarat DATETIME NOT NULL,
+            FOREIGN KEY (felhasznalo_id) REFERENCES felhasznalo(id) ON DELETE CASCADE
+        );
+    ");
     }
 
     return $pdo;

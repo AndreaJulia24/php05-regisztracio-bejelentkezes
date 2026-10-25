@@ -2,18 +2,18 @@
 declare(strict_types=1);
 require_once __DIR__ . '/functions.php';
 
-// Inicializáljuk a próbálkozások számlálóját
+// 1. Próbálkozások számláló inicializálása
 if (!isset($_SESSION['login_attempts'])) {
     $_SESSION['login_attempts'] = 0;
     $_SESSION['last_attempt_time'] = time();
 }
 
-// Ha már eltelt legalább 60 másodperc az utolsó próbálkozás óta, lenullázzuk a számlálót
+// 60 mp után nullázunk
 if (time() - $_SESSION['last_attempt_time'] > 60) {
     $_SESSION['login_attempts'] = 0;
 }
 
-// 1. Ellenőrzés: ha elérte a 6 hibás próbálkozást, 429-es választ adunk
+// 2. Rate limit ellenőrzés (ha már tiltva van)
 if ($_SESSION['login_attempts'] >= 6) {
     http_response_code(429);
     header('Retry-After: 60');
@@ -24,12 +24,11 @@ if ($_SESSION['login_attempts'] >= 6) {
 
 $error = '';
 
+// 3. POST kérés feldolgozása (ha szerveroldali beküldés vagy curl teszt érkezik)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Növeljük a hibás próbálkozások számát és frissítjük az időbélyeget
     $_SESSION['login_attempts']++;
     $_SESSION['last_attempt_time'] = time();
 
-    // Ha ezzel a POST-tal érte el a 6-ot, egyből 429-et dobunk
     if ($_SESSION['login_attempts'] >= 6) {
         http_response_code(429);
         header('Retry-After: 60');
@@ -38,7 +37,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // 1–5. próbálkozás esetén a sima 401 Unauthorized hiba megy ki
+    $email = trim($_POST['email'] ?? '');
+    $jelszo = (string)($_POST['password'] ?? $_POST['jelszo'] ?? '');
+
+    // Lekérjük a felhasználót az adatbázisból
+    $stmt = get_pdo()->prepare('SELECT id, nev, email, jelszo_hash FROM felhasznalo WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    // Jelszó ellenőrzése
+    if ($user && password_verify($jelszo, $user['jelszo_hash'])) {
+        $_SESSION['login_attempts'] = 0;
+        session_regenerate_id(true);
+        $_SESSION['uid'] = (int)$user['id'];
+
+        if (!empty($_POST['remember_me'])) {
+            emlekezz_ram_letrehoz((int)$user['id']);
+        }
+
+        header('Location: index.php');
+        exit;
+    }
+
+    // Hibás belépés esetén
     http_response_code(401);
     $error = 'Hibás e-mail cím vagy jelszó.';
 }
@@ -72,6 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="password" id="jelszo" required>
             </label>
             <button class="primary" type="submit">Bejelentkezés</button>
+            <div class="remember-box">
+                <label for="remember_me">
+                    <input type="checkbox" name="remember_me" id="remember_me" value="1">
+                    <span>Emlékezzen rám</span>
+                </label>
+            </div>
         </form>
 
         <p class="small">Még nincs fiókod? <a href="regisztracio.php">Regisztrálj</a></p>
@@ -80,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script type="module">
         import { auth, belep } from './firebase.js';
 
-        // Ha már be van jelentkezve, irány az index
+        // Ha már be van jelentkezve, irány az index vagyis a főoldal
         await auth.authStateReady();
         if (auth.currentUser) {
             window.location.replace('index.php');
