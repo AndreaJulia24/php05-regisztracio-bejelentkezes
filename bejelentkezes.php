@@ -43,8 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bejelentkezés</title>
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
 </head>
 <body>
+    <button class="theme-toggle" type="button" aria-label="Sötét mód">Dark</button>
     <main>
         <h1>Bejelentkezés</h1>
         <p>Jelentkezz be a fiókodba.</p>

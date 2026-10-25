@@ -20,8 +20,10 @@ if (isset($_SESSION['uid'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regisztráció és bejelentkezés</title>
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
 </head>
 <body>
+    <button class="theme-toggle" type="button" aria-label="Sötét mód">Dark</button>
     <main>
         <?php if ($user !== null): ?>
             <h1>Szia, <?= e($user['name']) ?>!</h1>

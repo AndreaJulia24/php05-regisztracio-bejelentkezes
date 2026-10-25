@@ -64,8 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regisztráció</title>
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
 </head>
 <body>
+    <button class="theme-toggle" type="button" aria-label="Sötét mód">Dark</button>
     <main>
         <h1>Regisztráció</h1>
         <p>Hozz létre egy új felhasználói fiókot.</p>
