@@ -21,6 +21,7 @@ if (isset($_SESSION['uid'])) {
     <title>Regisztráció és bejelentkezés</title>
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
+    <script src="firebase.js"></script> 
 </head>
 <body>
     <button class="theme-toggle" type="button" aria-label="Sötét mód">Dark</button>
