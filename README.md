@@ -1,4 +1,4 @@
-# PHP-05 Regisztráció és Bejelentkezés Mintaalkalmazás
+## PHP-05 Regisztráció és Bejelentkezés Mintaalkalmazás
 
 Egy biztonságos, egyszerű és moduláris felhasználókezelő webalkalmazás natív PHP, SQLite és JSON perzisztencia felhasználásával.
 
@@ -15,7 +15,9 @@ Egy biztonságos, egyszerű és moduláris felhasználókezelő webalkalmazás n
 
 ---
 
-## Mappaszerkezet
+
+
+## 3. Mappaszerkezet
 
 ```text
 ├── assets/
@@ -35,8 +37,9 @@ Egy biztonságos, egyszerű és moduláris felhasználókezelő webalkalmazás n
 ├── style.css                # Felhasználói felület stíluslapja
 └── theme.js                 # Világos/sötét téma kezelése böngészőoldalon
 
+```
 
-### 3. Futtatás és indítás
+## 4. Futtatás és indítás
 
 A projekt mappájában indítsd el a beépített webszervert:
 
