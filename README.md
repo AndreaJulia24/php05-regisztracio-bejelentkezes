@@ -15,13 +15,6 @@ Egy biztonságos, egyszerű és moduláris felhasználókezelő webalkalmazás n
 
 ---
 
-### 3. Futtatás és indítás
-
-A projekt mappájában indítsd el a beépített webszervert:
-
-```bash
-php -S localhost:8000
-
 ## Mappaszerkezet
 
 ```text
@@ -42,3 +35,10 @@ php -S localhost:8000
 ├── style.css                # Felhasználói felület stíluslapja
 └── theme.js                 # Világos/sötét téma kezelése böngészőoldalon
 
+
+### 3. Futtatás és indítás
+
+A projekt mappájában indítsd el a beépített webszervert:
+
+```bash
+php -S localhost:8000
